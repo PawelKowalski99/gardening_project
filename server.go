@@ -1,8 +1,12 @@
 package main
 
 import (
-	"github.com/PawelKowalski99/gardener_project/backend/db"
-	"github.com/PawelKowalski99/gardener_project/backend/handlers"
+	"context"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/PawelKowalski99/gardener_project/backend/api"
 
 	// "fmt"
 
@@ -12,25 +16,32 @@ import (
 
 func main() {
 
-	db.Init()
-	db := db.Manager()
-
 	e := echo.New()
+
+	err := api.SetRouters(e)
+	if err != nil {
+
+	}
 
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// Routes
-	// g := e.Group("/users")
-	e.GET("/users", handlers.GetAllUsers(db))
-	e.POST("/users", handlers.CreateUser)
-	e.GET("/users/:id", handlers.GetUser)
-	e.PUT("/users/:id", handlers.UpdateUser)
-	e.DELETE("/users/:id", handlers.DeleteUser)
+	go func() {
+		if err := e.Start(":1323"); err != nil {
+			e.Logger.Info("shutting down the server")
+		}
+	}()
 
-	// Start server
-
-	e.Logger.Fatal(e.Start(":1323"))
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 10 seconds.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
 
 }
