@@ -41,7 +41,7 @@ type (
 		gorm.Model
 		UserID      uint   `gorm:"unique"`
 		Description string `gorm:"type:varchar"   json:"description" form:"description"`
-		Difficulty  uint   `gorm:"type:varchar"   json:"difficulty"  form:"difficulty"`
+		Difficulty  uint   `gorm:"type:smallint"   json:"difficulty"  form:"difficulty"`
 	}
 )
 

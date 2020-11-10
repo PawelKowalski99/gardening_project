@@ -3,10 +3,10 @@ package handlers
 import ( // "encoding/json"
 	// "github.com/google/uuid"
 
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/PawelKowalski99/gardener_project/backend/api/models"
 	"github.com/dgrijalva/jwt-go"
@@ -21,23 +21,20 @@ func (h *Handler) CreateOrder(c echo.Context) error {
 	userID := uint(claims["id"].(float64))
 
 	//Prepare struct fields
-	price, _ := strconv.ParseFloat(c.FormValue("price"), 64)
-
-	months, err := strconv.Atoi(c.FormValue("months"))
-	if err != nil {
-		log.Println(months)
+	diff, err := strconv.Atoi(c.FormValue("difficulty"))
+	if diff < 0 || diff > 10 {
+		return errors.New("Difficulty not in range (difficulty < 0 && difficulty > 10")
+	} else if err != nil {
 		return err
 	}
 
-	s := models.Subscription{
+	o := models.Order{
 		UserID:      userID,
-		Price:       price,
+		Difficulty:  uint(diff),
 		Description: c.FormValue("description"),
-		TimeEnd:     time.Now().AddDate(0, months, 0),
 	}
-	h.db.Create(&s)
-	return c.JSONPretty(http.StatusOK, s, " ")
-
+	h.db.Create(&o)
+	return c.JSONPretty(http.StatusOK, o, " ")
 }
 
 func (h *Handler) GetOrder(c echo.Context) error {
@@ -46,11 +43,11 @@ func (h *Handler) GetOrder(c echo.Context) error {
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
 	userID := uint(claims["id"].(float64))
 
-	var subscriptions []models.Subscription
-	s := models.Subscription{}
-	h.db.Where("user_id  = ?", userID).Find(&subscriptions).Scan(&s)
-	log.Println(s)
-	return c.JSONPretty(http.StatusOK, s, " ")
+	var orders []models.Order
+	o := models.Order{}
+	h.db.Where("user_id  = ?", userID).Find(&orders).Scan(o)
+	log.Println(o)
+	return c.JSONPretty(http.StatusOK, o, " ")
 }
 
 func (h *Handler) UpdateOrder(c echo.Context) error {
@@ -59,18 +56,18 @@ func (h *Handler) UpdateOrder(c echo.Context) error {
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
 	userID := uint(claims["id"].(float64))
 
-	var subscription models.Subscription
-	var subscriptions []models.Subscription
-	h.db.Where("user_id  = ?", userID).Find(&subscriptions).Scan(&subscription)
+	var orders []models.Order
+	o := models.Order{}
+	h.db.Where("user_id  = ?", userID).Find(&orders).Scan(o)
 
-	update := models.Subscription{}
+	update := models.Order{}
 	if err := c.Bind(&update); err != nil {
 		return err
 	}
-	h.db.Model(&subscription).Updates(update)
-	h.db.Save(&subscription)
+	h.db.Model(&o).Updates(update)
+	h.db.Save(&o)
 
-	return c.JSONPretty(http.StatusOK, subscription, " ")
+	return c.JSONPretty(http.StatusOK, o, " ")
 }
 
 func (h *Handler) DeleteOrder(c echo.Context) error {
@@ -79,6 +76,6 @@ func (h *Handler) DeleteOrder(c echo.Context) error {
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
 	userID := uint(claims["id"].(float64))
 
-	h.db.Delete(&models.Subscription{}, userID)
+	h.db.Delete(&models.Order{}, userID)
 	return c.NoContent(http.StatusNoContent)
 }
