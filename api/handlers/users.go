@@ -66,7 +66,8 @@ func (h *Handler) GetAllUsers(c echo.Context) error {
 func (h *Handler) GetUser(c echo.Context) error {
 	users := []models.User{}
 	id := c.Param("id")
-	u := h.db.Where("ID = ?", id).Find(&users)
+	u := models.User{}
+	h.db.Where("ID = ?", id).Find(&users).Scan(&u)
 	log.Println(u)
 	return c.JSON(http.StatusOK, u)
 }

@@ -13,7 +13,7 @@ import ( // "encoding/json"
 	"github.com/labstack/echo"
 )
 
-func (h *Handler) CreateSubscription(c echo.Context) error {
+func (h *Handler) CreateOrder(c echo.Context) error {
 
 	//Auth jwt token
 	u := c.Get("user")
@@ -40,7 +40,7 @@ func (h *Handler) CreateSubscription(c echo.Context) error {
 
 }
 
-func (h *Handler) GetSubscription(c echo.Context) error {
+func (h *Handler) GetOrder(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
@@ -53,7 +53,7 @@ func (h *Handler) GetSubscription(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, s, " ")
 }
 
-func (h *Handler) UpdateSubscription(c echo.Context) error {
+func (h *Handler) UpdateOrder(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
@@ -73,7 +73,7 @@ func (h *Handler) UpdateSubscription(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, subscription, " ")
 }
 
-func (h *Handler) DeleteSubscription(c echo.Context) error {
+func (h *Handler) DeleteOrder(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)

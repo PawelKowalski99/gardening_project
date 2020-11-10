@@ -16,13 +16,13 @@ type (
 
 	User struct {
 		gorm.Model
-		FirstName    string       `json:"first_name" form:"first_name"`
-		LastName     string       `json:"last_name" form:"last_name"`
-		Email        string       `gorm:"type:varchar" json:"email" form:"email"`
-		Password     string       `gorm:"type:varchar" json:"password" form:"password"`
-		Wallet       float64      `gorm:"float(4)"     json:"wallet,string" form:"wallet"`
-		Order        Order        `gorm:"ForeignKey:PersonID"`
-		Subscription Subscription `gorm:"ForeignKey:PersonID"`
+		FirstName    string  `gorm:"type:varchar" json:"first_name" form:"first_name"`
+		LastName     string  `gorm:"type:varchar" json:"last_name" form:"last_name"`
+		Email        string  `gorm:"type:varchar" json:"email" form:"email"`
+		Password     string  `gorm:"type:varchar" json:"password" form:"password"`
+		Wallet       float64 `gorm:"float(4)"     json:"wallet,string" form:"wallet"`
+		Order        Order
+		Subscription Subscription
 		Role         string
 		Range        float64
 	}
@@ -30,16 +30,16 @@ type (
 	//Subscription Model
 	Subscription struct {
 		gorm.Model
-		PersonID    uint
-		Price       uint64    `gorm:"type:float(4)"  json:"wallet"`
+		UserID      uint      `gorm:"unique"`
+		Price       float64   `gorm:"type:float(4)"  json:"wallet"`
 		Description string    `gorm:"type:varchar"   json:"description"`
 		TimeStarted time.Time `gorm:"type:timestamp;autoCreateTime" json:"time_started"`
-		TimeEnd     time.Time `json:"time_end"`
+		TimeEnd     time.Time `gorm:"type:timestamp" json:"time_end"`
 	}
 
 	Order struct {
 		gorm.Model
-		PersonID    uint
+		UserID      uint   `gorm:"unique"`
 		Description string `gorm:"type:varchar"   json:"description" form:"description"`
 		Difficulty  uint   `gorm:"type:varchar"   json:"difficulty"  form:"difficulty"`
 	}
