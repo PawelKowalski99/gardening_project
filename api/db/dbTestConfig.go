@@ -1,21 +1,14 @@
 package db
 
 import (
-	"os"
-
 	"github.com/PawelKowalski99/gardener_project/backend/api/models"
-	"github.com/joho/godotenv"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	// "fmt"
 )
 
-//ConnectDB inits the database connection
-func ConnectDB() (*gorm.DB, error) {
-	err := godotenv.Load()
+func ConnectTestDB() (*gorm.DB, error) {
 
-	dsn := os.Getenv("DB_DSN")
+	dsn := "user=gardening_project_db_test password=gardening_project_db_test dbname=gardening_project_db_test port=5432 sslmode=disable"
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,

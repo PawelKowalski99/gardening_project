@@ -11,9 +11,14 @@ import ( // "encoding/json"
 	"github.com/PawelKowalski99/gardener_project/backend/api/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
-func (h *Handler) CreateSubscription(c echo.Context) error {
+type Subscription struct {
+	db *gorm.DB
+}
+
+func (h *Subscription) Create(c echo.Context) error {
 
 	//Auth jwt token
 	u := c.Get("user")
@@ -40,7 +45,15 @@ func (h *Handler) CreateSubscription(c echo.Context) error {
 
 }
 
-func (h *Handler) GetSubscription(c echo.Context) error {
+//GetAllUsers gets all users from table User
+func (u *Subscription) GetAll(c echo.Context) error {
+	//TODO: GetAll Subscriptions
+
+	return c.JSON(http.StatusOK, "")
+
+}
+
+func (h *Subscription) Get(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
@@ -53,7 +66,7 @@ func (h *Handler) GetSubscription(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, s, " ")
 }
 
-func (h *Handler) UpdateSubscription(c echo.Context) error {
+func (h *Subscription) Update(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
@@ -73,7 +86,7 @@ func (h *Handler) UpdateSubscription(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, subscription, " ")
 }
 
-func (h *Handler) DeleteSubscription(c echo.Context) error {
+func (h *Subscription) Delete(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)

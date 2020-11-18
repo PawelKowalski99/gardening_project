@@ -11,9 +11,14 @@ import ( // "encoding/json"
 	"github.com/PawelKowalski99/gardener_project/backend/api/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
-func (h *Handler) CreateOrder(c echo.Context) error {
+type Order struct {
+	db *gorm.DB
+}
+
+func (h *Order) Create(c echo.Context) error {
 
 	//Auth jwt token
 	u := c.Get("user")
@@ -37,7 +42,14 @@ func (h *Handler) CreateOrder(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, o, " ")
 }
 
-func (h *Handler) GetOrder(c echo.Context) error {
+func (u *Order) GetAll(c echo.Context) error {
+	//TODO: GetAll Subscriptions
+
+	return c.JSON(http.StatusOK, "")
+
+}
+
+func (h *Order) Get(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
@@ -50,7 +62,7 @@ func (h *Handler) GetOrder(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, o, " ")
 }
 
-func (h *Handler) UpdateOrder(c echo.Context) error {
+func (h *Order) Update(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)
@@ -70,7 +82,7 @@ func (h *Handler) UpdateOrder(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, o, " ")
 }
 
-func (h *Handler) DeleteOrder(c echo.Context) error {
+func (h *Order) Delete(c echo.Context) error {
 	//Auth jwt token
 	u := c.Get("user")
 	claims := u.(*jwt.Token).Claims.(jwt.MapClaims)

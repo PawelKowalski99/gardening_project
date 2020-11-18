@@ -1,59 +1,65 @@
 package api
 
 import (
-	"github.com/PawelKowalski99/gardener_project/backend/api/db"
 	"github.com/PawelKowalski99/gardener_project/backend/api/handlers"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"gorm.io/gorm"
 )
 
-func SetRouters(e *echo.Echo) error {
-	db, err := db.ConnectDB()
-	if err != nil {
-		return err
-	}
-	h := handlers.NewHandler(db)
+type CRUDHandler interface {
+	Create(c echo.Context) error
+	Get(c echo.Context) error
+	GetAll(c echo.Context) error
+	Delete(c echo.Context) error
+	Update(c echo.Context) error
+}
 
-	userGroup := e.Group("/users")
+type CRUDGroup struct {
+	G       *echo.Group
+	Handler CRUDHandler
+}
+
+func SetRouters(e *echo.Echo, db *gorm.DB) error {
+	h := handlers.NewBaseHandler(db)
+
 	authGroup := e.Group("/auth")
 	restrictedGroup := e.Group("/restricted")
-	subscriptionGroup := restrictedGroup.Group("/subscriptions")
-	orderGroup := restrictedGroup.Group("/orders")
 
 	restrictedGroup.Use(middleware.JWT([]byte("secret")))
 
-	userGroupMethods(userGroup, h)
+	CRUDGroups := []CRUDGroup{
+		{
+			G:       e.Group("/users"),
+			Handler: handlers.NewCRUDHandler(db, "user"),
+		},
+		{
+			G:       restrictedGroup.Group("/subscriptions"),
+			Handler: handlers.NewCRUDHandler(db, "subscription"),
+		},
+		{
+			G:       restrictedGroup.Group("/orders"),
+			Handler: handlers.NewCRUDHandler(db, "order"),
+		},
+	}
+
+	for _, CRUDGroup := range CRUDGroups {
+		groupCRUDMethods(CRUDGroup.G, CRUDGroup.Handler)
+	}
+
 	authGroupMethods(authGroup, h)
-	subscriptionGroupMethods(subscriptionGroup, h)
-	orderGroupMethods(orderGroup, h)
 
 	return nil
 }
 
-func userGroupMethods(g *echo.Group, h *handlers.Handler) {
-	g.GET("", h.GetAllUsers)
-	g.POST("", h.CreateUser)
-	g.GET("/:id", h.GetUser)
-	g.PUT("/:id", h.UpdateUser)
-	g.DELETE("/:id", h.DeleteUser)
+func groupCRUDMethods(g *echo.Group, h CRUDHandler) {
+	g.GET("", h.GetAll)
+	g.POST("", h.Create)
+	g.GET("/:id", h.Get)
+	g.PUT("/:id", h.Update)
+	g.DELETE("/:id", h.Delete)
 }
 
 func authGroupMethods(g *echo.Group, h *handlers.Handler) {
 	g.POST("/login", h.Login)
-}
-
-func subscriptionGroupMethods(g *echo.Group, h *handlers.Handler) {
-	// g.GET("", h.GetAllUsers)
-	g.POST("", h.CreateSubscription)
-	g.GET("/:id", h.GetSubscription)
-	g.PUT("/:id", h.UpdateSubscription)
-	g.DELETE("/:id", h.DeleteSubscription)
-}
-
-func orderGroupMethods(g *echo.Group, h *handlers.Handler) {
-	// g.GET("", h.GetAllUsers)
-	g.POST("", h.CreateOrder)
-	g.GET("/:id", h.GetOrder)
-	g.PUT("/:id", h.UpdateOrder)
-	g.DELETE("/:id", h.DeleteOrder)
 }

@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/PawelKowalski99/gardener_project/backend/api"
+	"github.com/PawelKowalski99/gardener_project/backend/api/db"
+	"gorm.io/gorm"
 
 	// "fmt"
 
@@ -14,22 +16,36 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-func main() {
+type App struct {
+	e  *echo.Echo
+	db *gorm.DB
+}
 
-	e := echo.New()
+func (a *App) Initialize() error {
+	a.e = echo.New()
 
-	err := api.SetRouters(e)
+	var err error
+	a.db, err = db.ConnectDB()
+	if err != nil {
+		return err
+	}
+
+	err = api.SetRouters(a.e, a.db)
 	if err != nil {
 
 	}
 
 	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	a.e.Use(middleware.Logger())
+	a.e.Use(middleware.Recover())
 
+	return nil
+}
+
+func (a *App) Run() error {
 	go func() {
-		if err := e.Start(":1323"); err != nil {
-			e.Logger.Info("shutting down the server")
+		if err := a.e.Start(":1323"); err != nil {
+			a.e.Logger.Info("shutting down the server")
 		}
 	}()
 
@@ -40,8 +56,16 @@ func main() {
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
+	if err := a.e.Shutdown(ctx); err != nil {
+		a.e.Logger.Fatal(err)
 	}
+	return nil
+}
+
+func main() {
+	app := App{}
+
+	app.Initialize()
+	app.Run()
 
 }
