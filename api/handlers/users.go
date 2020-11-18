@@ -55,8 +55,6 @@ func NewCRUDHandler(db *gorm.DB, name string) CRUDHandler {
 		return &Subscription{db}
 	case order:
 		return &Order{db}
-	default:
-		return
 	}
 	return nil
 }
